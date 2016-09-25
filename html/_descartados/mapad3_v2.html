@@ -1,0 +1,96 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+    <title></title>
+
+<style>
+.states {
+    fill: gray;
+    stroke: white;
+    stroke-linejoin: round;
+}
+    
+</style>
+</head>    
+
+<body>
+    
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<script>
+var width = 900,
+    height = 650;
+
+// var color = d3.scale.linear().domain([1,23]).range(['#14D6D0', 'yellow']);
+var color = d3.scale.linear().domain([0,1]).range(['#F5D7D7', '#DE0707']);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var projection = d3.geo.mercator()
+    .center([-55,-10])
+    .scale(700);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+queue()
+    .defer(d3.json, "BRA_adm1.json")
+    .await(ready);
+
+function fill_color(word){
+    console.log(word);
+    return color(word.replace(/\s+/g, '').length / 23);
+};
+
+
+// var xmlhttp = new XMLHttpRequest();
+// var url = "uf_bolsafamilia.json";
+// xmlhttp.onreadystatechange = function() {
+//     if (this.readyState == 4 && this.status == 200) {
+//         var myArr = JSON.parse(this.responseText);
+//         ready(myArr);
+//         // console.log(myArr);
+//         // console.log(myArr.Percent_Pop_Bolsa);
+//         // console.log(myArr.Percent_Pop_Bolsa.AC);
+//     }
+// };
+// xmlhttp.open("GET", url, true);
+// xmlhttp.send();
+
+
+// console.log('bruno');
+// console.log(myArr);
+
+function ready(error, br_states) {
+    if (error) return console.error(error);
+    // console.log(br_states.objects)
+    var states = topojson.feature(br_states, br_states.objects.BRA_adm1);
+    // fill_color();
+    // console.log(color(0.1))
+    // console.log(color(0.3))
+    // console.log(color(0.7))
+    // console.log(color(0.9))
+    svg.append("g")
+            .attr("class", "states")
+        .selectAll("path")
+          .data(states.features)
+        .enter().append("path")
+          .style('fill', function(d){return fill_color(d.properties.NAME_1);})
+          .attr('d', path);
+
+          // .style('fill', function(d){fill_color(d.properties.NAME_1); return color( d.properties.NAME_1.replace(/\s+/g, '').length / 23);})
+          // .style('fill', function(d){console.log(d); return fill_color(d);})
+          // .style('fill', fill_color(d))
+};
+
+</script>
+
+
+</body>
+</html>

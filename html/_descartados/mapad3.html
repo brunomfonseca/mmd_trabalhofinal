@@ -1,0 +1,58 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+    <title></title>
+
+<style>
+.states {
+    fill: gray;
+    stroke: white;
+    stroke-linejoin: round;
+}
+    
+</style>
+</head>    
+
+<body>
+    
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<script>
+var width = 900,
+    height = 650;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var projection = d3.geo.mercator()
+    .center([-55,-10])
+    .scale(700);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+queue()
+    .defer(d3.json, "BRA_adm1.json")
+    .await(ready);
+
+function ready(error, br_states) {
+    if (error) return console.error(error);
+    // console.log(br_states.objects)
+    var states = topojson.feature(br_states, br_states.objects.BRA_adm1);
+
+    svg.append("path")
+        .datum(states)
+        .attr("d", path)
+        .attr("class", "states");
+
+};
+
+</script>
+
+
+</body>
+</html>

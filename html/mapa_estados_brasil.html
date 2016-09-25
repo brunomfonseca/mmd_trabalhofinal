@@ -1,0 +1,83 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+    <title></title>
+
+<style>
+.states {
+    fill: gray;
+    stroke: white;
+    stroke-linejoin: round;
+}
+    
+</style>
+</head>    
+
+<body>
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<script>
+var width = 800,
+    height = 650;
+
+var color = d3.scale.linear().domain([1,15]).range(['#F5D7D7', '#DE0707']);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var projection = d3.geo.mercator()
+    .center([-55,-10])
+    .scale(700);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+queue()
+    .defer(d3.json, "topojson_estados_brasil.json")
+    .await(readjson);
+
+
+function readjson(error, br_states){
+    if (error) return console.error(error);
+    var xmlhttp = new XMLHttpRequest();
+    var url = "uf_bolsafamilia.json";
+    xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var jsonobj = JSON.parse(this.responseText);
+            desenha_mapa(br_states, jsonobj.Percent_Pop_Bolsa);
+        }
+    };
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+};
+
+
+function desenha_mapa(br_states, array) {
+    var states = topojson.feature(br_states, br_states.objects.BRA_adm1);
+    var cor = 0
+    svg.append("g")
+            .attr("class", "states")
+        .selectAll("path")
+          .data(states.features)
+        .enter().append("path")
+          .style('fill', function(d){
+                            cor = eval("array."+d.properties.HASC_1.substring(3));
+                            return color(cor);
+                        })
+          .attr('d', path)
+          .attr('class', "uf")
+          .attr('id', function(d){ return d.properties.HASC_1.substring(3);});
+
+};
+
+
+</script>
+
+</body>
+</html>
